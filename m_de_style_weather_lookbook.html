@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MÔDE — Assistente de Estilo & Recomendador por Clima</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..800;1,400..800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Playfair Display', 'serif'],
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        fashion: {
+                            50: '#FAF8F5',
+                            100: '#F4EFE6',
+                            200: '#E7DCB2',
+                            300: '#D6BE82',
+                            800: '#2C2A29',
+                            900: '#1A1918',
+                            gold: '#C5A059',
+                            goldHover: '#B28E46'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #FAF8F5;
+            color: #1A1918;
+        }
+        .serif-title {
+            font-family: 'Playfair Display', serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 218, 206, 0.6);
+        }
+        .active-tab {
+            border-bottom: 2px solid #C5A059;
+            color: #1A1918;
+            font-weight: 600;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #D6BE82;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="min-h-full flex flex-col justify-between selection:bg-fashion-gold selection:text-white">
+
+    <!-- Toast Notification Container -->
+    <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-fashion-900 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-fashion-gold/40">
+        <i data-lucide="check-circle" class="w-5 h-5 text-fashion-gold"></i>
+        <span id="toast-message" class="text-sm font-medium">Ação realizada com sucesso!</span>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 bg-fashion-50/90 backdrop-blur-md border-b border-stone-200/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                
+                <!-- Logo & Brand -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('weather')">
+                    <div class="w-10 h-10 rounded-full bg-fashion-900 text-fashion-gold flex items-center justify-center font-serif text-xl font-bold shadow-md">
+                        M
+                    </div>
+                    <div>
+                        <h1 class="serif-title text-2xl font-bold tracking-tight text-fashion-900">MÔDE</h1>
+                        <p class="text-[10px] tracking-widest uppercase text-stone-500 font-semibold">Haute Weather & Style</p>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="flex space-x-2 sm:space-x-8">
+                    <button id="tab-btn-weather" onclick="switchTab('weather')" class="active-tab py-2 px-3 sm:px-4 text-sm font-medium transition-all flex items-center gap-2">
+                        <i data-lucide="cloud-sun" class="w-4 h-4 text-fashion-gold"></i>
+                        <span>Escolha por Clima</span>
+                    </button>
+                    <button id="tab-btn-lookbook" onclick="switchTab('lookbook')" class="text-stone-500 hover:text-fashion-900 py-2 px-3 sm:px-4 text-sm font-medium transition-all flex items-center gap-2">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        <span>Meu Lookbook & Estilo</span>
+                    </button>
+                </nav>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- =================================================================== -->
+        <!-- SCREEN 1: RECOMENDADOR POR CLIMA -->
+        <!-- =================================================================== -->
+        <section id="section-weather" class="space-y-8 transition-opacity duration-300">
+            
+            <!-- Hero Search Header -->
+            <div class="text-center max-w-3xl mx-auto space-y-4 pt-4">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-fashion-100 text-fashion-800 border border-fashion-200">
+                    <i data-lucide="thermometer-sun" class="w-3.5 h-3.5 text-fashion-gold"></i> Assistente Inteligente de Vestuário
+                </span>
+                <h2 class="serif-title text-3xl sm:text-5xl font-bold text-fashion-900 tracking-tight">
+                    Como está o clima aí fora hoje?
+                </h2>
+                <p class="text-stone-600 text-sm sm:text-base">
+                    Digite qualquer condição do tempo para receber recomendações completas de looks divididas por estilos e personalizadas para cada ocasião.
+                </p>
+            </div>
+
+            <!-- Weather Input Box & Quick Buttons -->
+            <div class="max-w-2xl mx-auto space-y-4">
+                <form id="weather-form" onsubmit="handleWeatherSubmit(event)" class="relative flex items-center">
+                    <div class="absolute left-4 text-stone-400">
+                        <i data-lucide="search" class="w-5 h-5"></i>
+                    </div>
+                    <input type="text" id="weather-input" 
+                        placeholder="Ex: Frio e chuvoso, muito quente, neve, ventania, sol ameno..." 
+                        class="w-full pl-12 pr-32 py-4 rounded-2xl bg-white border border-stone-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-fashion-gold/50 focus:border-fashion-gold transition-all text-sm sm:text-base text-stone-800 placeholder-stone-400"
+                    />
+                    <button type="submit" class="absolute right-2.5 px-5 py-2.5 bg-fashion-900 hover:bg-black text-white text-sm font-medium rounded-xl transition-all flex items-center gap-2 shadow-md">
+                        <span>Analisar</span>
+                        <i data-lucide="arrow-right" class="w-4 h-4 text-fashion-gold"></i>
+                    </button>
+                </form>
+
+                <!-- Shortcut Buttons -->
+                <div class="space-y-2">
+                    <p class="text-xs font-semibold text-stone-500 uppercase tracking-wider text-center">Climas Populares RÁPIDOS:</p>
+                    <div class="flex flex-wrap justify-center gap-2">
+                        <button onclick="quickWeather('Calor de Sol')" class="weather-chip px-3.5 py-1.5 bg-white hover:bg-amber-50 border border-stone-200 hover:border-amber-300 rounded-full text-xs font-medium text-stone-700 hover:text-amber-800 transition-all flex items-center gap-1.5 shadow-sm">
+                            <span>☀️</span> Calor de Sol
+                        </button>
+                        <button onclick="quickWeather('Frio Intenso')" class="weather-chip px-3.5 py-1.5 bg-white hover:bg-blue-50 border border-stone-200 hover:border-blue-300 rounded-full text-xs font-medium text-stone-700 hover:text-blue-800 transition-all flex items-center gap-1.5 shadow-sm">
+                            <span>❄️</span> Frio Intenso
+                        </button>
+                        <button onclick="quickWeather('Dia Chuvoso')" class="weather-chip px-3.5 py-1.5 bg-white hover:bg-cyan-50 border border-stone-200 hover:border-cyan-300 rounded-full text-xs font-medium text-stone-700 hover:text-cyan-800 transition-all flex items-center gap-1.5 shadow-sm">
+                            <span>🌧️</span> Dia Chuvoso
+                        </button>
+                        <button onclick="quickWeather('Ameno / Outono')" class="weather-chip px-3.5 py-1.5 bg-white hover:bg-orange-50 border border-stone-200 hover:border-orange-300 rounded-full text-xs font-medium text-stone-700 hover:text-orange-800 transition-all flex items-center gap-1.5 shadow-sm">
+                            <span>🍂</span> Ameno / Outono
+                        </button>
+                        <button onclick="quickWeather('Vento Fresco')" class="weather-chip px-3.5 py-1.5 bg-white hover:bg-teal-50 border border-stone-200 hover:border-teal-300 rounded-full text-xs font-medium text-stone-700 hover:text-teal-800 transition-all flex items-center gap-1.5 shadow-sm">
+                            <span>🌬️</span> Vento Fresco
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Occasion Filters & Weather Summary Banner -->
+            <div class="pt-4 border-t border-stone-200/60">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-stone-200 shadow-sm">
+                    
+                    <!-- Weather Status Output -->
+                    <div class="flex items-center gap-3">
+                        <div id="weather-status-icon" class="w-10 h-10 rounded-xl bg-fashion-100 flex items-center justify-center text-fashion-800">
+                            <i data-lucide="sun" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs uppercase tracking-wider text-stone-400 font-bold block">Clima Selecionado</span>
+                            <h3 id="weather-status-text" class="text-base font-semibold text-fashion-900">Mostrando sugestões para: <span class="text-fashion-gold">Ameno / Outono</span></h3>
+                        </div>
+                    </div>
+
+                    <!-- Occasion Filter Buttons -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 custom-scrollbar">
+                        <span class="text-xs font-medium text-stone-400 mr-2 whitespace-nowrap">Filtrar Ocasião:</span>
+                        <button onclick="filterOccasion('Todas')" class="occasion-btn active px-3 py-1.5 rounded-lg text-xs font-semibold bg-fashion-900 text-white transition-all whitespace-nowrap">Todas</button>
+                        <button onclick="filterOccasion('Lazer')" class="occasion-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-100 text-stone-600 hover:bg-stone-200 transition-all whitespace-nowrap">Lazer</button>
+                        <button onclick="filterOccasion('Trabalho')" class="occasion-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-100 text-stone-600 hover:bg-stone-200 transition-all whitespace-nowrap">Trabalho</button>
+                        <button onclick="filterOccasion('Encontro')" class="occasion-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-100 text-stone-600 hover:bg-stone-200 transition-all whitespace-nowrap">Encontro</button>
+                        <button onclick="filterOccasion('Academia')" class="occasion-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-100 text-stone-600 hover:bg-stone-200 transition-all whitespace-nowrap">Academia</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- OUTFIT RESULTS GRID -->
+            <div id="outfits-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Dynamically populated by JavaScript -->
+            </div>
+
+        </section>
+
+
+        <!-- =================================================================== -->
+        <!-- SCREEN 2: MEU LOOKBOOK & ESTILO -->
+        <!-- =================================================================== -->
+        <section id="section-lookbook" class="space-y-12 hidden transition-opacity duration-300">
+            
+            <!-- Hero Header -->
+            <div class="text-center max-w-3xl mx-auto space-y-3">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-fashion-100 text-fashion-800 border border-fashion-200">
+                    <i data-lucide="heart" class="w-3.5 h-3.5 text-fashion-gold"></i> Identidade Visual & Gostos
+                </span>
+                <h2 class="serif-title text-3xl sm:text-5xl font-bold text-fashion-900 tracking-tight">
+                    Meu Lookbook & Estilo Pessoal
+                </h2>
+                <p class="text-stone-600 text-sm sm:text-base">
+                    Explore seus estilos favoritos de referência, conheça as paletas que combina com sua personalidade e monte composições personalizadas no seu guarda-roupa virtual.
+                </p>
+            </div>
+
+            <!-- PART 1: FAVORITE STYLE GALLERY -->
+            <div class="space-y-6">
+                <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+                    <h3 class="serif-title text-2xl font-bold text-fashion-900 flex items-center gap-2">
+                        <i data-lucide="bookmark" class="w-5 h-5 text-fashion-gold"></i>
+                        Galeria dos Meus Estilos Favoritos
+                    </h3>
+                    <span class="text-xs text-stone-500 font-medium">6 Estilos Curados</span>
+                </div>
+
+                <div id="style-gallery-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Populated via JavaScript -->
+                </div>
+            </div>
+
+            <!-- PART 2: INTERACTIVE OUTFIT BUILDER -->
+            <div class="bg-stone-900 text-white rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden space-y-8">
+                <!-- Background Accent Blur -->
+                <div class="absolute -top-24 -right-24 w-96 h-96 bg-fashion-gold/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="space-y-2 border-b border-stone-800 pb-6">
+                    <span class="text-fashion-gold text-xs font-bold uppercase tracking-widest flex items-center gap-1.5">
+                        <i data-lucide="sliders" class="w-4 h-4"></i> Estúdio de Estilo
+                    </span>
+                    <h3 class="serif-title text-2xl sm:text-4xl font-bold tracking-tight text-white">
+                        Montar Look no Meu Gostinho
+                    </h3>
+                    <p class="text-stone-400 text-sm">
+                        Combine peças essenciais do seu acervo pessoal, escolha a ocasião e salve sua combinação customizada na sua galeria privada.
+                    </p>
+                </div>
+
+                <!-- Builder Form + Realtime Preview Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    
+                    <!-- Form Controls (7 cols) -->
+                    <div class="lg:col-span-7 space-y-4">
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-stone-300 uppercase tracking-wider mb-1.5">Nome do Look</label>
+                                <input type="text" id="builder-name" value="Sexta Minimalista & Chic" class="w-full bg-stone-800 border border-stone-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-fashion-gold transition-all" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-stone-300 uppercase tracking-wider mb-1.5">Estilo Base</label>
+                                <select id="builder-style" onchange="updateBuilderPreview()" class="w-full bg-stone-800 border border-stone-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-fashion-gold transition-all">
+                                    <option value="Minimalista Chic">Minimalista Chic</option>
+                                    <option value="Streetwear Urbano">Streetwear Urbano</option>
+                                    <option value="Smart Casual">Smart Casual</option>
+                                    <option value="Casual Confortável">Casual Confortável</option>
+                                    <option value="Vintage / Retro">Vintage / Retro</option>
+                                    <option value="Boho Elegante">Boho Elegante</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-stone-300 uppercase tracking-wider mb-1.5">Ocasião Ideal</label>
+                                <select id="builder-occasion" onchange="updateBuilderPreview()" class="w-full bg-stone-800 border border-stone-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-fashion-gold transition-all">
+                                    <option value="Lazer">Lazer / Passeio</option>
+                                    <option value="Trabalho">Trabalho / Office</option>
+                                    <option value="Encontro">Encontro / Jantar</option>
+                                    <option value="Academia">Academia / Treino</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-stone-300 uppercase tracking-wider mb-1.5">Parte de Cima (Top)</label>
+                                <input type="text" id="builder-top" value="Camisa Oversized Off-White em Algodão" oninput="updateBuilderPreview()" class="w-full bg-stone-800 border border-stone-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-fashion-gold transition-all" />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-stone-300 uppercase tracking-wider mb-1.5">Parte de Baixo (Bottom)</label>
+                                <input type="text" id="builder-bottom" value="Calça Alfaiataria Wide Leg Preta" oninput="updateBuilderPreview()" class="w-full bg-stone-800 border border-stone-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-fashion-gold transition-all" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-stone-300 uppercase tracking-wider mb-1.5">Calçado</label>
+                                <input type="text" id="builder-footwear" value="Moccasin tratorado ou Loafer Couro" oninput="updateBuilderPreview()" class="w-full bg-stone-800 border border-stone-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-fashion-gold transition-all" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-stone-300 uppercase tracking-wider mb-1.5">Terceira Peça ou Acessório Destaque</label>
+                            <input type="text" id="builder-extra" value="Blazer estruturado cinza & Óculos estilo gatinho" oninput="updateBuilderPreview()" class="w-full bg-stone-800 border border-stone-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-fashion-gold transition-all" />
+                        </div>
+
+                        <button onclick="saveCustomOutfit()" class="w-full py-3.5 bg-fashion-gold hover:bg-fashion-goldHover text-stone-900 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 mt-2">
+                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                            <span>Salvar Combinação no Meu Guarda-Roupa</span>
+                        </button>
+
+                    </div>
+
+                    <!-- Live Preview Card (5 cols) -->
+                    <div class="lg:col-span-5 bg-stone-800/80 border border-stone-700 rounded-2xl p-6 space-y-4">
+                        <div class="flex items-center justify-between border-b border-stone-700 pb-3">
+                            <span class="text-xs uppercase font-bold text-fashion-gold tracking-widest flex items-center gap-1">
+                                <i data-lucide="eye" class="w-3.5 h-3.5"></i> Pré-Visualização
+                            </span>
+                            <span id="preview-badge-occasion" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-stone-700 text-stone-300">Lazer</span>
+                        </div>
+
+                        <div>
+                            <span id="preview-style-tag" class="text-xs text-stone-400 uppercase font-semibold">Minimalista Chic</span>
+                            <h4 id="preview-title" class="serif-title text-xl font-bold text-white">Sexta Minimalista & Chic</h4>
+                        </div>
+
+                        <div class="space-y-2.5 text-xs text-stone-300">
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="shirt" class="w-4 h-4 text-fashion-gold shrink-0 mt-0.5"></i>
+                                <div><strong class="text-white">Cima:</strong> <span id="preview-top">Camisa Oversized Off-White em Algodão</span></div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="scissors" class="w-4 h-4 text-fashion-gold shrink-0 mt-0.5"></i>
+                                <div><strong class="text-white">Baixo:</strong> <span id="preview-bottom">Calça Alfaiataria Wide Leg Preta</span></div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="footprints" class="w-4 h-4 text-fashion-gold shrink-0 mt-0.5"></i>
+                                <div><strong class="text-white">Calçado:</strong> <span id="preview-footwear">Moccasin tratorado ou Loafer Couro</span></div>
+                            </div>
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="sparkles" class="w-4 h-4 text-fashion-gold shrink-0 mt-0.5"></i>
+                                <div><strong class="text-white">Complemento:</strong> <span id="preview-extra">Blazer estruturado cinza & Óculos estilo gatinho</span></div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 border-t border-stone-700/60 flex items-center justify-between text-[11px] text-stone-400">
+                            <span>Toque de Personalidade: 100% Autêntico</span>
+                            <span class="text-fashion-gold">✨ Pronto para Salvar</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- PART 3: SAVED CUSTOM LOOKS GALLERY -->
+            <div class="space-y-6 pt-4">
+                <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+                    <h3 class="serif-title text-2xl font-bold text-fashion-900 flex items-center gap-2">
+                        <i data-lucide="folder-heart" class="w-5 h-5 text-fashion-gold"></i>
+                        Meus Looks Personalizados Salvos
+                    </h3>
+                    <button onclick="clearSavedLooks()" class="text-xs text-red-600 hover:text-red-800 font-medium transition-all">Limpar Todos</button>
+                </div>
+
+                <div id="saved-looks-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-fashion-900 text-stone-400 py-8 border-t border-stone-800 mt-16 text-center text-xs">
+        <div class="max-w-7xl mx-auto px-4 space-y-2">
+            <p class="serif-title text-lg text-white font-bold tracking-widest">MÔDE</p>
+            <p>Seu assistente inteligente de estilo & moda adaptada ao tempo. Feito para expressar sua melhor versão.</p>
+            <p class="text-stone-600 pt-2">© 2026 MÔDE Haute Couture Digital. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        
+        // ---------------------------------------------------------------------
+        // DATA MODEL: WEATHER OUTFIT DATABASE
+        // ---------------------------------------------------------------------
+        const WEATHER_LOOKS_DB = {
+            'HOT': {
+                name: 'Calor & Sol Intenso',
+                icon: 'sun',
+                badgeClass: 'bg-amber-100 text-amber-800',
+                looks: [
+                    {
+                        style: 'Casual Minimalista',
+                        title: 'Frescor com Linho & Tons Neutros',
+                        occasion: 'Lazer',
+                        thermalRating: 'Alta Respirabilidade (30°C+)',
+                        pieces: {
+                            top: 'Camisa de linho leve manga curta (Tom Areia)',
+                            bottom: 'Bermuda alfaiataria em sarja leve ou linho',
+                            footwear: 'Sandália de couro trançado ou Alpargata',
+                            outerwear: 'Não necessário (Óculos de sol UV400)',
+                            accessories: 'Chapéu Panamá & Relógio com pulseira de lona'
+                        },
+                        fabricTips: 'Tecidos 100% naturais (Linho e Algodão cru) facilitam a transpiração e mantêm o corpo fresco.',
+                        palette: ['#E8D8C8', '#FFFFFF', '#D2B48C', '#362D24']
+                    },
+                    {
+                        style: 'Elegante / Smart Casual',
+                        title: 'Elegância Tropical Estruturada',
+                        occasion: 'Trabalho',
+                        thermalRating: 'Fresco e Formal (26°C - 32°C)',
+                        pieces: {
+                            top: 'Camisa polo em tricot leve de algodão respirável',
+                            bottom: 'Calça chino leve tom bege claro ou off-white',
+                            footwear: 'Loafer/Moccasin de camurça sem meia',
+                            outerwear: 'Blazer de linho não estruturado (opcional para AC)',
+                            accessories: 'Cinto de couro trançado & Relógio minimalista'
+                        },
+                        fabricTips: 'Prefira peças sem forro e tramas abertas para manter o visual profissional sem esquentar.',
+                        palette: ['#F5F5DC', '#A0522D', '#2F4F4F', '#D3D3D3']
+                    },
+                    {
+                        style: 'Streetwear / Urbano',
+                        title: 'Urban Breeze & Caimento Oversized',
+                        occasion: 'Encontro',
+                        thermalRating: 'Conforto Despojado',
+                        pieces: {
+                            top: 'Camiseta Oversized algodão pesado 100% respirável',
+                            bottom: 'Shorts de sarja cargo ou Jeans leve com lavagem clara',
+                            footwear: 'Tênis casual de lona (estilo Converse/Vans)',
+                            outerwear: 'Camisa xadrez leve aberta como terceira peça',
+                            accessories: 'Bucket Hat & Shoulder Bag preta'
+                        },
+                        fabricTips: 'Modelagens soltas e oversized criam fluxo de ar natural entre a roupa e a pele.',
+                        palette: ['#1A1A1A', '#E6E6FA', '#87CEEB', '#FFFFFF']
+                    },
+                    {
+                        style: 'Esportivo / Athleisure',
+                        title: 'Performance & Treino sob o Sol',
+                        occasion: 'Academia',
+                        thermalRating: 'Secagem Ultra Rápida',
+                        pieces: {
+                            top: 'Regata ou Camiseta Dry-Fit leve contra raios UV',
+                            bottom: 'Shorts de corrida duplo com compressão interna',
+                            footwear: 'Tênis de corrida com cabedal em Mesh respirável',
+                            outerwear: 'Corta-vento super fino dobrável',
+                            accessories: 'Viseira esportiva & Garrafa térmica de aço'
+                        },
+                        fabricTips: 'Tecnologia sintética de alta performance drena o suor e evita assaduras.',
+                        palette: ['#FF4500', '#20B2AA', '#000000', '#F0F8FF']
+                    }
+                ]
+            },
+            'COLD': {
+                name: 'Frio Intenso & Inverno',
+                icon: 'snowflake',
+                badgeClass: 'bg-blue-100 text-blue-800',
+                looks: [
+                    {
+                        style: 'Casual Chic',
+                        title: 'Texturas Aconchegantes em Lã',
+                        occasion: 'Lazer',
+                        thermalRating: 'Isolamento Térmico Pesado (< 12°C)',
+                        pieces: {
+                            top: 'Suéter de gola alta em lã Merino',
+                            bottom: 'Calça de veludo cotelê ou sarja encorpada',
+                            footwear: 'Bota Chelsea em couro legítimo',
+                            outerwear: 'Sobretudo estruturado em lã batida (Camel coat)',
+                            accessories: 'Cachecol xadrez de tricot & Luvas de couro'
+                        },
+                        fabricTips: 'Use o sistema de 3 camadas: Segunda pele térmica + Isolante (Lã) + Proteção externa (Sobretudo).',
+                        palette: ['#C5A059', '#2B2B2B', '#8B4513', '#D9C3B0']
+                    },
+                    {
+                        style: 'Elegante / Alfa',
+                        title: 'Alfaiataria Impecável de Inverno',
+                        occasion: 'Trabalho',
+                        thermalRating: 'Proteção Térmica Executiva',
+                        pieces: {
+                            top: 'Camisa social + Cardigan de cashmere por baixo',
+                            bottom: 'Calça alfaiataria em lã fria de gramatura alta',
+                            footwear: 'Sapato Derby ou Bota social cano curto',
+                            outerwear: 'Trench Coat longo abotoamento duplo',
+                            accessories: 'Lenço de seda no bolso & Pasta executiva'
+                        },
+                        fabricTips: 'A lã fria de alta gramatura retém o calor corporal mantendo a silhueta esbelta.',
+                        palette: ['#1C2833', '#4A5568', '#718096', '#EDF2F7']
+                    },
+                    {
+                        style: 'Streetwear / Heavy',
+                        title: 'Puffer Layering & Cultura Street',
+                        occasion: 'Encontro',
+                        thermalRating: 'Extremo Conforto Urbano',
+                        pieces: {
+                            top: 'Moletom Canguru (Hoodie) de gramatura 400g',
+                            bottom: 'Calça Jeans reta com lavagem escura e forro macio',
+                            footwear: 'Tênis Chunky ou Bota estilo Timberland',
+                            outerwear: 'Jaqueta Puffer Oversized acolchoada',
+                            accessories: 'Gorro Beanie em tricot & Mochila tática'
+                        },
+                        fabricTips: 'Jaquetas puffer retêm bolsões de ar quente que atuam como isolante perfeito.',
+                        palette: ['#000000', '#556B2F', '#A9A9A9', '#FFD700']
+                    },
+                    {
+                        style: 'Esportivo / Thermal Fit',
+                        title: 'Treino de Inverno & Outdoor',
+                        occasion: 'Academia',
+                        thermalRating: 'Aquecimento Acelerado',
+                        pieces: {
+                            top: 'Camisa térmica segunda pele Manga Longa',
+                            bottom: 'Calça Jogger flanelada com punho na canela',
+                            footwear: 'Tênis de corrida com aderência para piso úmido',
+                            outerwear: 'Jaqueta Jaquetão fleece com zíper frontal',
+                            accessories: 'Faixa de orelha térmica & Luvas de treino'
+                        },
+                        fabricTips: 'Fleece e tecidos peluciados internos mantêm os músculos aquecidos antes da atividade.',
+                        palette: ['#2F4F4F', '#FF6347', '#1A1A1A', '#808080']
+                    }
+                ]
+            },
+            'RAIN': {
+                name: 'Chuva & Tempo Úmido',
+                icon: 'cloud-rain',
+                badgeClass: 'bg-cyan-100 text-cyan-800',
+                looks: [
+                    {
+                        style: 'Casual Urbano',
+                        title: 'Proteção Repelente & Estilo',
+                        occasion: 'Lazer',
+                        thermalRating: 'Resistência à Água & Vento',
+                        pieces: {
+                            top: 'Suéter macio em algodão denso',
+                            bottom: 'Calça Jeans resinada ou sarja hidro-repelente',
+                            footwear: 'Galocha urbana estilizada ou Bota impermeável',
+                            outerwear: 'Parka impermeável com capuz regulável',
+                            accessories: 'Guarda-chuva compacto reforçado & Gorro'
+                        },
+                        fabricTips: 'Evite tecidos como linho ou camurça que mancham em contato direto com a água.',
+                        palette: ['#34495E', '#7F8C8D', '#BDC3C7', '#16A085']
+                    },
+                    {
+                        style: 'Smart Chic',
+                        title: 'Alfaiataria Protegida',
+                        occasion: 'Trabalho',
+                        thermalRating: 'Elegância Impermeável',
+                        pieces: {
+                            top: 'Camisa Oxford com acabamento Easy Iron',
+                            bottom: 'Calça alfaiataria em sarja escura',
+                            footwear: 'Sapato de couro com sola de borracha antiderrapante',
+                            outerwear: 'Trench Coat clássico impermeabilizado',
+                            accessories: 'Mochila emborrahada à prova d’água'
+                        },
+                        fabricTips: 'Solados de borracha garantem estabilidade em calçadas molhadas e escorregadias.',
+                        palette: ['#1A252C', '#D5D8DC', '#2E4053', '#A93226']
+                    },
+                    {
+                        style: 'Techwear Street',
+                        title: 'Tech-Utility & Estética Futuro',
+                        occasion: 'Encontro',
+                        thermalRating: 'Totalmente Selado',
+                        pieces: {
+                            top: 'Camiseta de fibra sintética de secagem rápida',
+                            bottom: 'Calça Cargo Techwear com bolsos selados',
+                            footwear: 'Tênis com membrana Gore-Tex impermeável',
+                            outerwear: 'Anorak corta-vento impermeável tricolor',
+                            accessories: 'Bag tiracolo impermeável'
+                        },
+                        fabricTips: 'Membranas como Gore-Tex deixam o suor sair sem permitir que a água da chuva entre.',
+                        palette: ['#0B0C10', '#1F2833', '#C5C6C7', '#66FCF1']
+                    },
+                    {
+                        style: 'Esportivo Storm',
+                        title: 'Running under Rain',
+                        occasion: 'Academia',
+                        thermalRating: 'Corta-Vento Repelente',
+                        pieces: {
+                            top: 'Camiseta técnica de alta absorção',
+                            bottom: 'Bermuda ou Legging de compressão com secagem expressa',
+                            footwear: 'Tênis de corrida com cravos para tração no molhado',
+                            outerwear: 'Jaqueta Corta-Vento ultraleve com Capuz',
+                            accessories: 'Boné com aba curada para proteger os olhos'
+                        },
+                        fabricTips: 'Boné impede que a água da chuva caia diretamente nos olhos durante o treino ao ar livre.',
+                        palette: ['#000000', '#39FF14', '#2C3E50', '#FFFFFF']
+                    }
+                ]
+            },
+            'MILD': {
+                name: 'Clima Ameno & Outono (18°C - 24°C)',
+                icon: 'wind',
+                badgeClass: 'bg-orange-100 text-orange-800',
+                looks: [
+                    {
+                        style: 'Casual Moderno',
+                        title: 'Equilíbrio Aconchegante de Outono',
+                        occasion: 'Lazer',
+                        thermalRating: 'Conforto Térmico Equilibrado',
+                        pieces: {
+                            top: 'Camiseta básica algodão Premium 100%',
+                            bottom: 'Calça Jeans Slim ou Reta com lavagem média',
+                            footwear: 'Tênis casual em couro branco',
+                            outerwear: 'Cardigan aberto de tricot leve ou Jaqueta Jeans',
+                            accessories: 'Óculos de sol estilo Retro & Cinto de couro'
+                        },
+                        fabricTips: 'O clima ameno é perfeito para camadas leves (layering) fáceis de tirar se esquentar.',
+                        palette: ['#D2B48C', '#4682B4', '#FFFFFF', '#8B4513']
+                    },
+                    {
+                        style: 'Elegante / Work',
+                        title: 'Smart Casual Versátil',
+                        occasion: 'Trabalho',
+                        thermalRating: 'Sofisticação sem Excesso',
+                        pieces: {
+                            top: 'Camisa social dobrada até o antebraço',
+                            bottom: 'Calça chino slim ou alfaiataria cropped',
+                            footwear: 'Loafer de camurça ou Moccasin',
+                            outerwear: 'Blazer leve de algodão ou tricot fino',
+                            accessories: 'Relógio clássico de ponteiro & Pasta de couro'
+                        },
+                        fabricTips: 'Algodão e sarja de gramatura média fornecem estrutura ideal para meia-estação.',
+                        palette: ['#1C2833', '#E5E8E8', '#A0522D', '#5B2C6F']
+                    },
+                    {
+                        style: 'Streetwear Vintage',
+                        title: 'Nostalgia & Overlay Urbano',
+                        occasion: 'Encontro',
+                        thermalRating: 'Estilo Leve e Despojado',
+                        pieces: {
+                            top: 'Camiseta gráfica de algodão vintage',
+                            bottom: 'Calça Jogger Twill ou Jeans baggy',
+                            footwear: 'Tênis de cano alto estilo skater',
+                            outerwear: 'Jaqueta Bomber acolchoada leve',
+                            accessories: 'Corrente discreta no pescoço & Boné vintage'
+                        },
+                        fabricTips: 'Misture peças estruturadas (jaqueta bomber) com peças soltas para um visual moderno.',
+                        palette: ['#2C3E50', '#E74C3C', '#ECF0F1', '#F39C12']
+                    },
+                    {
+                        style: 'Esportivo Casual',
+                        title: 'Athleisure de Meia-Estação',
+                        occasion: 'Academia',
+                        thermalRating: 'Flexibilidade Térmica',
+                        pieces: {
+                            top: 'Camiseta de poliamida com elastano',
+                            bottom: 'Calça de treino leve com fechamento em zíper na barra',
+                            footwear: 'Tênis de amortecimento macio',
+                            outerwear: 'Blusa moletom careca sem capuz (French Terry)',
+                            accessories: 'Smartwatch com pulseira de silicone'
+                        },
+                        fabricTips: 'Moletom French Terry sem flanela pesada aquecem na medida certa sem superaquecer.',
+                        palette: ['#7F8C8D', '#000000', '#1ABC9C', '#FFFFFF']
+                    }
+                ]
+            }
+        };
+
+        // ---------------------------------------------------------------------
+        // DATA MODEL: STYLE GALLERY (LOOKBOOK TAB)
+        // ---------------------------------------------------------------------
+        const STYLES_GALLERY = [
+            {
+                name: "Minimalista Chic",
+                badge: "Clássico Contemporâneo",
+                description: "Cortes limpos, silhuetas bem estruturadas e uma paleta neutra atemporal. Foco total em qualidade dos tecidos e caimento impecável.",
+                essentials: ["Camisa Branca Oversized", "Calça Alfaiataria Wide Leg", "Trench Coat Bege", "Blazer Estruturado"],
+                accessories: ["Óculos de Sol Minimalista", "Brincos de Argola Dourados", "Bolsa Estruturada em Couro"],
+                palette: [
+                    { hex: "#FAF8F5", name: "Off-White" },
+                    { hex: "#2C2A29", name: "Preto Asfalto" },
+                    { hex: "#C5A059", name: "Camel Gold" },
+                    { hex: "#A9B2AC", name: "Cinza Névoa" }
+                ],
+                rationale: "Amamos este estilo porque traz elegância imediata sem esforço visual, multiplicando as combinações do guarda-roupa."
+            },
+            {
+                name: "Streetwear Urbano",
+                badge: "Expressão & Cultura",
+                description: "Inspirado na cultura urbana, skate e hip-hop. Combina conforto com peças marcantes, proporções exageradas e tênis icônicos.",
+                essentials: ["Hoodie de Gramatura Alta", "Calça Cargo Utilitária", "Camiseta Oversized Gráfica", "Jaqueta Puffer"],
+                accessories: ["Bucket Hat", "Shoulder Bag Tática", "Corrente Prateada"],
+                palette: [
+                    { hex: "#121212", name: "Blackout" },
+                    { hex: "#5C6250", name: "Verde Militar" },
+                    { hex: "#E63946", name: "Vermelho Urbano" },
+                    { hex: "#F1FAEE", name: "Branco Puro" }
+                ],
+                rationale: "Perfeito para transmitir atitude, autenticidade e liberdade de movimento no dia a dia."
+            },
+            {
+                name: "Smart Casual",
+                badge: "Versatilidade Elegante",
+                description: "A ponte perfeita entre o formal e o relaxado. Une peças de alfaiataria com itens casuais e confortáveis.",
+                essentials: ["Blazer Casual em Linho/Algodão", "Calça Chino Slim", "Polo em Tricot", "Jeans Escuro Sem Rasgos"],
+                accessories: ["Relógio Clássico de Couro", "Loafer de Camurça", "Cinto Trançado"],
+                palette: [
+                    { hex: "#1D3557", name: "Azul Marinho" },
+                    { hex: "#F4A261", name: "Terracota" },
+                    { hex: "#E9C46A", name: "Areia" },
+                    { hex: "#264653", name: "Verde Petróleo" }
+                ],
+                rationale: "O coringa definitivo: transita do ambiente de trabalho para o jantar ou happy hour instantaneamente."
+            },
+            {
+                name: "Casual Confortável",
+                badge: "Effortless Cozy",
+                description: "Focado em tecidos macios, toque agradável na pele e modelagens relaxadas para quem prioriza sentir-se bem.",
+                essentials: ["Suéter em Tricot Macio", "Calça Jogger de Sarja", "Camiseta Algodão Egípcio", "Jaqueta Jeans"],
+                accessories: ["Mochila Leve de Lona", "Tênis Slip-on", "Cachecol de Lã"],
+                palette: [
+                    { hex: "#D8C3A5", name: "Bege Aconchegante" },
+                    { hex: "#8E8D8A", name: "Cinza Mescla" },
+                    { hex: "#E98074", name: "Coral Suave" },
+                    { hex: "#88D49E", name: "Verde Sálvia" }
+                ],
+                rationale: "Proporciona bem-estar o dia todo mantendo uma aparência bem cuidada e moderna."
+            },
+            {
+                name: "Vintage / Retro",
+                badge: "Nostalgia Elegante",
+                description: "Inspirado nas décadas de 70, 80 e 90. Destaca jaquetas de couro com pátina, jeans encorpados vintage e calçados clássicos.",
+                essentials: ["Jaqueta de Couro Usada", "Jeans Levi’s 501 Reta", "Camiseta Estampa Retro", "Jaqueta Corta-Vento Retro"],
+                accessories: ["Óculos Ray-Ban Aviador", "Cinto Fivela Vintage", "Tênis Retro Runner"],
+                palette: [
+                    { hex: "#6B4226", name: "Couro Envelhecido" },
+                    { hex: "#1C3144", name: "Jeans Indigo Original" },
+                    { hex: "#D00000", name: "Vermelho Retro" },
+                    { hex: "#FFBA08", name: "Amarelo Mostarda" }
+                ],
+                rationale: "Valoriza peças com história, durabilidade extrema e estética cheia de personalidade única."
+            },
+            {
+                name: "Athleisure Glam",
+                badge: "Esporte & Sofisticação",
+                description: "Fusão de roupas esportivas de alta tecnologia com elementos refinados da moda urbana.",
+                essentials: ["Set de Legging & Top Estruturado", "Jaqueta Bomber acetinada", "Tênis Chunky de Designer", "Regata Ribana"],
+                accessories: ["Óculos Esportivo Espelhado", "Garrafa Térmica Premium", "Boné Aba Curva Minimalista"],
+                palette: [
+                    { hex: "#0F172A", name: "Dark Navy" },
+                    { hex: "#38BDF8", name: "Azul Neon" },
+                    { hex: "#F8FAFC", name: "Crisp White" },
+                    { hex: "#CBD5E1", name: "Prata Metálico" }
+                ],
+                rationale: "União perfeita entre a rotina ativa de exercícios e a rotina acelerada da cidade com extremo glamour."
+            }
+        ];
+
+        // ---------------------------------------------------------------------
+        // STATE MANAGEMENT
+        // ---------------------------------------------------------------------
+        let currentTab = 'weather';
+        let currentOccasionFilter = 'Todas';
+        let currentDetectedWeatherKey = 'MILD';
+        let savedCustomLooks = [];
+
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            loadSavedLooksFromStorage();
+            renderWeatherLooks('MILD');
+            renderStyleGallery();
+            renderSavedLooks();
+            updateBuilderPreview();
+            lucide.createIcons();
+        });
+
+        // Tab Switching Logic
+        function switchTab(tab) {
+            currentTab = tab;
+            const weatherSec = document.getElementById('section-weather');
+            const lookbookSec = document.getElementById('section-lookbook');
+            const tabBtnWeather = document.getElementById('tab-btn-weather');
+            const tabBtnLookbook = document.getElementById('tab-btn-lookbook');
+
+            if (tab === 'weather') {
+                weatherSec.classList.remove('hidden');
+                lookbookSec.classList.add('hidden');
+                tabBtnWeather.className = "active-tab py-2 px-3 sm:px-4 text-sm font-medium transition-all flex items-center gap-2";
+                tabBtnLookbook.className = "text-stone-500 hover:text-fashion-900 py-2 px-3 sm:px-4 text-sm font-medium transition-all flex items-center gap-2";
+            } else {
+                weatherSec.classList.add('hidden');
+                lookbookSec.classList.remove('hidden');
+                tabBtnLookbook.className = "active-tab py-2 px-3 sm:px-4 text-sm font-medium transition-all flex items-center gap-2";
+                tabBtnWeather.className = "text-stone-500 hover:text-fashion-900 py-2 px-3 sm:px-4 text-sm font-medium transition-all flex items-center gap-2";
+            }
+            lucide.createIcons();
+        }
+
+        // ---------------------------------------------------------------------
+        // WEATHER RECOMMENDATION ENGINE
+        // ---------------------------------------------------------------------
+
+        function parseWeatherInput(text) {
+            const input = text.toLowerCase().trim();
+            
+            // Keyword detection priority
+            if (input.includes('chuva') || input.includes('chuvoso') || input.includes('tempestade') || input.includes('garoa') || input.includes('temporal') || input.includes('pingando')) {
+                return 'RAIN';
+            }
+            if (input.includes('neve') || input.includes('frio') || input.includes('gelado') || input.includes('geada') || input.includes('congelante') || input.includes('inverno') || input.includes('mto frio')) {
+                return 'COLD';
+            }
+            if (input.includes('sol') || input.includes('quente') || input.includes('calor') || input.includes('verao') || input.includes('praia') || input.includes('escaldante') || input.includes('mormaco')) {
+                return 'HOT';
+            }
+            if (input.includes('vento') || input.includes('ameno') || input.includes('outono') || input.includes('primavera') || input.includes('fresco') || input.includes('ventania')) {
+                return 'MILD';
+            }
+
+            // Fallback default
+            return 'MILD';
+        }
+
+        function handleWeatherSubmit(event) {
+            event.preventDefault();
+            const inputVal = document.getElementById('weather-input').value;
+            if (!inputVal) return;
+            
+            const detectedKey = parseWeatherInput(inputVal);
+            currentDetectedWeatherKey = detectedKey;
+            
+            // Update UI status text
+            document.getElementById('weather-status-text').innerHTML = `Mostrando sugestões para: <span class="text-fashion-gold font-bold font-serif capitalize">"${inputVal}"</span>`;
+            
+            renderWeatherLooks(detectedKey);
+            showToast(`Looks atualizados para o clima: ${inputVal}`);
+        }
+
+        function quickWeather(weatherName) {
+            document.getElementById('weather-input').value = weatherName;
+            const detectedKey = parseWeatherInput(weatherName);
+            currentDetectedWeatherKey = detectedKey;
+
+            document.getElementById('weather-status-text').innerHTML = `Mostrando sugestões para: <span class="text-fashion-gold font-bold font-serif">${weatherName}</span>`;
+            renderWeatherLooks(detectedKey);
+            showToast(`Preset ativado: ${weatherName}`);
+        }
+
+        function filterOccasion(occasion) {
+            currentOccasionFilter = occasion;
+            
+            // Update active styling on filter buttons
+            const buttons = document.querySelectorAll('.occasion-btn');
+            buttons.forEach(btn => {
+                if (btn.textContent.trim() === occasion) {
+                    btn.className = "occasion-btn active px-3 py-1.5 rounded-lg text-xs font-semibold bg-fashion-900 text-white transition-all whitespace-nowrap shadow-sm";
+                } else {
+                    btn.className = "occasion-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-stone-100 text-stone-600 hover:bg-stone-200 transition-all whitespace-nowrap";
+                }
+            });
+
+            renderWeatherLooks(currentDetectedWeatherKey);
+        }
+
+        function renderWeatherLooks(weatherKey) {
+            const container = document.getElementById('outfits-container');
+            const category = WEATHER_LOOKS_DB[weatherKey] || WEATHER_LOOKS_DB['MILD'];
+
+            // Update status icon
+            const iconContainer = document.getElementById('weather-status-icon');
+            iconContainer.innerHTML = `<i data-lucide="${category.icon}" class="w-5 h-5"></i>`;
+
+            // Filter looks based on occasion if needed
+            let looksToDisplay = category.looks;
+            if (currentOccasionFilter !== 'Todas') {
+                looksToDisplay = category.looks.filter(look => look.occasion === currentOccasionFilter);
+            }
+
+            if (looksToDisplay.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-12 bg-white rounded-2xl border border-stone-200 p-8 space-y-3">
+                        <i data-lucide="info" class="w-8 h-8 text-fashion-gold mx-auto"></i>
+                        <h4 class="font-bold text-lg text-stone-800">Nenhum look encontrado para esta ocasião específica.</h4>
+                        <p class="text-xs text-stone-500">Tente selecionar "Todas as Ocasiões" para visualizar os estilos disponíveis.</p>
+                        <button onclick="filterOccasion('Todas')" class="px-4 py-2 bg-fashion-900 text-white rounded-xl text-xs font-semibold hover:bg-black">Ver Todas</button>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = looksToDisplay.map((look) => `
+                <div class="glass-card rounded-2xl p-6 sm:p-7 space-y-5 hover:shadow-xl transition-all duration-300 border border-stone-200/90 relative group">
+                    
+                    <!-- Card Top Header -->
+                    <div class="flex items-start justify-between gap-3 border-b border-stone-200/70 pb-4">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-0.5 rounded-md text-[10px] uppercase font-extrabold bg-fashion-900 text-fashion-gold tracking-wider">
+                                    ${look.style}
+                                </span>
+                                <span class="px-2.5 py-0.5 rounded-md text-[10px] uppercase font-bold bg-stone-100 text-stone-600 border border-stone-200">
+                                    <i data-lucide="tag" class="w-3 h-3 inline mr-1"></i>${look.occasion}
+                                </span>
+                            </div>
+                            <h4 class="serif-title text-xl font-bold text-fashion-900 group-hover:text-fashion-gold transition-colors pt-1">
+                                ${look.title}
+                            </h4>
+                        </div>
+                        <button onclick="copyOutfitToClipboard('${look.title}', '${look.style}')" title="Copiar ou Favoritar Look" class="p-2 rounded-xl bg-stone-100 hover:bg-fashion-gold hover:text-stone-900 text-stone-600 transition-all shrink-0">
+                            <i data-lucide="bookmark" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <!-- Thermal Rating Badge -->
+                    <div class="flex items-center gap-2 text-xs font-semibold text-stone-700 bg-fashion-50 p-2.5 rounded-xl border border-fashion-200/60">
+                        <i data-lucide="thermometer" class="w-4 h-4 text-fashion-gold"></i>
+                        <span>Conforto Térmico: <strong class="text-fashion-900">${look.thermalRating}</strong></span>
+                    </div>
+
+                    <!-- Pieces List Breakdown -->
+                    <div class="space-y-2.5 text-xs text-stone-700">
+                        <div class="flex items-start gap-2.5">
+                            <i data-lucide="shirt" class="w-4 h-4 text-fashion-gold shrink-0 mt-0.5"></i>
+                            <div><strong class="text-stone-900">Parte de Cima:</strong> ${look.pieces.top}</div>
+                        </div>
+                        <div class="flex items-start gap-2.5">
+                            <i data-lucide="scissors" class="w-4 h-4 text-fashion-gold shrink-0 mt-0.5"></i>
+                            <div><strong class="text-stone-900">Parte de Baixo:</strong> ${look.pieces.bottom}</div>
+                        </div>
+                        <div class="flex items-start gap-2.5">
+                            <i data-lucide="footprints" class="w-4 h-4 text-fashion-gold shrink-0 mt-0.5"></i>
+                            <div><strong class="text-stone-900">Calçado:</strong> ${look.pieces.footwear}</div>
+                        </div>
+                        <div class="flex items-start gap-2.5">
+                            <i data-lucide="shield" class="w-4 h-4 text-fashion-gold shrink-0 mt-0.5"></i>
+                            <div><strong class="text-stone-900">Terceira Peça:</strong> ${look.pieces.outerwear}</div>
+                        </div>
+                        <div class="flex items-start gap-2.5">
+                            <i data-lucide="sparkles" class="w-4 h-4 text-fashion-gold shrink-0 mt-0.5"></i>
+                            <div><strong class="text-stone-900">Acessórios:</strong> ${look.pieces.accessories}</div>
+                        </div>
+                    </div>
+
+                    <!-- Fabric & Layering Tip -->
+                    <div class="p-3 bg-amber-50/60 rounded-xl border border-amber-200/50 text-xs text-amber-900 flex items-start gap-2">
+                        <i data-lucide="lightbulb" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5"></i>
+                        <div><strong class="font-bold">Dica de Tecido:</strong> ${look.fabricTips}</div>
+                    </div>
+
+                    <!-- Color Palette Circles -->
+                    <div class="pt-2 border-t border-stone-200/60 flex items-center justify-between">
+                        <span class="text-[11px] font-bold uppercase tracking-wider text-stone-400">Paleta Sugerida:</span>
+                        <div class="flex items-center gap-1.5">
+                            ${look.palette.map(hex => `
+                                <div class="w-5 h-5 rounded-full border border-stone-300 shadow-sm transition-transform hover:scale-125" style="background-color: ${hex}" title="${hex}"></div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+        // ---------------------------------------------------------------------
+        // LOOKBOOK & PERSONAL STYLE LOGIC
+        // ---------------------------------------------------------------------
+
+        function renderStyleGallery() {
+            const container = document.getElementById('style-gallery-container');
+            container.innerHTML = STYLES_GALLERY.map(style => `
+                <div class="glass-card rounded-2xl p-6 space-y-4 border border-stone-200/80 hover:border-fashion-gold/50 transition-all duration-300 flex flex-col justify-between">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-fashion-100 text-fashion-800">
+                                ${style.badge}
+                            </span>
+                            <i data-lucide="heart" class="w-4 h-4 text-fashion-gold"></i>
+                        </div>
+                        <h4 class="serif-title text-2xl font-bold text-fashion-900">${style.name}</h4>
+                        <p class="text-xs text-stone-600 leading-relaxed">${style.description}</p>
+                    </div>
+
+                    <!-- Essential Items -->
+                    <div class="space-y-2 pt-2 border-t border-stone-200/60">
+                        <span class="text-[10px] font-bold uppercase text-stone-400 tracking-wider block">Peças Essenciais:</span>
+                        <div class="flex flex-wrap gap-1.5">
+                            ${style.essentials.map(item => `
+                                <span class="px-2 py-0.5 bg-stone-100 text-stone-700 text-[11px] rounded-md font-medium border border-stone-200">${item}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Color Swatches -->
+                    <div class="space-y-2 pt-2">
+                        <span class="text-[10px] font-bold uppercase text-stone-400 tracking-wider block">Paleta Predominante:</span>
+                        <div class="grid grid-cols-4 gap-1.5">
+                            ${style.palette.map(color => `
+                                <div class="text-center">
+                                    <div class="w-full h-6 rounded-md border border-stone-300 shadow-inner mb-1" style="background-color: ${color.hex}"></div>
+                                    <span class="text-[9px] font-medium text-stone-500 block truncate">${color.name}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Rationale -->
+                    <div class="p-3 bg-fashion-50 rounded-xl text-[11px] text-stone-700 italic border border-fashion-200/50">
+                        "${style.rationale}"
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        // Interactive Outfit Builder Logic
+        function updateBuilderPreview() {
+            const name = document.getElementById('builder-name').value || 'Meu Look Personalizado';
+            const style = document.getElementById('builder-style').value;
+            const occasion = document.getElementById('builder-occasion').value;
+            const top = document.getElementById('builder-top').value || 'Item não especificado';
+            const bottom = document.getElementById('builder-bottom').value || 'Item não especificado';
+            const footwear = document.getElementById('builder-footwear').value || 'Item não especificado';
+            const extra = document.getElementById('builder-extra').value || 'Nenhum acessório extra';
+
+            document.getElementById('preview-title').textContent = name;
+            document.getElementById('preview-style-tag').textContent = style;
+            document.getElementById('preview-badge-occasion').textContent = occasion;
+            document.getElementById('preview-top').textContent = top;
+            document.getElementById('preview-bottom').textContent = bottom;
+            document.getElementById('preview-footwear').textContent = footwear;
+            document.getElementById('preview-extra').textContent = extra;
+        }
+
+        function saveCustomOutfit() {
+            const newOutfit = {
+                id: Date.now(),
+                name: document.getElementById('builder-name').value || 'Meu Look Customizado',
+                style: document.getElementById('builder-style').value,
+                occasion: document.getElementById('builder-occasion').value,
+                top: document.getElementById('builder-top').value,
+                bottom: document.getElementById('builder-bottom').value,
+                footwear: document.getElementById('builder-footwear').value,
+                extra: document.getElementById('builder-extra').value,
+                createdAt: new Date().toLocaleDateString('pt-BR')
+            };
+
+            savedCustomLooks.unshift(newOutfit);
+            saveSavedLooksToStorage();
+            renderSavedLooks();
+            showToast("Look adicionado ao seu guarda-roupa salvo!");
+        }
+
+        function deleteCustomOutfit(id) {
+            savedCustomLooks = savedCustomLooks.filter(look => look.id !== id);
+            saveSavedLooksToStorage();
+            renderSavedLooks();
+            showToast("Look removido com sucesso.");
+        }
+
+        function clearSavedLooks() {
+            if (savedCustomLooks.length === 0) return;
+            savedCustomLooks = [];
+            saveSavedLooksToStorage();
+            renderSavedLooks();
+            showToast("Galeria de looks limpa.");
+        }
+
+        function renderSavedLooks() {
+            const container = document.getElementById('saved-looks-container');
+            
+            if (savedCustomLooks.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full text-center py-10 bg-white rounded-2xl border border-dashed border-stone-300 p-6 space-y-2">
+                        <i data-lucide="shirt" class="w-8 h-8 text-stone-300 mx-auto"></i>
+                        <p class="text-sm font-semibold text-stone-600">Nenhum look customizado salvo ainda.</p>
+                        <p class="text-xs text-stone-400">Use o criador acima para montar e salvar suas combinações exclusivas!</p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            container.innerHTML = savedCustomLooks.map(look => `
+                <div class="glass-card rounded-2xl p-5 space-y-4 border border-stone-200 relative group">
+                    <div class="flex items-start justify-between border-b border-stone-200 pb-3">
+                        <div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase bg-fashion-900 text-fashion-gold tracking-wider">${look.style}</span>
+                            <h4 class="serif-title text-lg font-bold text-fashion-900 pt-1">${look.name}</h4>
+                            <span class="text-[10px] text-stone-400">Criado em ${look.createdAt} • ${look.occasion}</span>
+                        </div>
+                        <button onclick="deleteCustomOutfit(${look.id})" title="Excluir look" class="text-stone-400 hover:text-red-600 transition-colors p-1">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+
+                    <div class="space-y-2 text-xs text-stone-700">
+                        <div class="flex items-center gap-2"><i data-lucide="shirt" class="w-3.5 h-3.5 text-fashion-gold"></i> <strong>Cima:</strong> ${look.top}</div>
+                        <div class="flex items-center gap-2"><i data-lucide="scissors" class="w-3.5 h-3.5 text-fashion-gold"></i> <strong>Baixo:</strong> ${look.bottom}</div>
+                        <div class="flex items-center gap-2"><i data-lucide="footprints" class="w-3.5 h-3.5 text-fashion-gold"></i> <strong>Calçado:</strong> ${look.footwear}</div>
+                        <div class="flex items-center gap-2"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-fashion-gold"></i> <strong>Extra:</strong> ${look.extra}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            lucide.createIcons();
+        }
+
+
+        // LocalStorage Helpers
+        function saveSavedLooksToStorage() {
+            try {
+                localStorage.setItem('mode_saved_looks', JSON.stringify(savedCustomLooks));
+            } catch (e) {
+                console.warn('LocalStorage error:', e);
+            }
+        }
+
+        function loadSavedLooksFromStorage() {
+            try {
+                const data = localStorage.getItem('mode_saved_looks');
+                if (data) {
+                    savedCustomLooks = JSON.parse(data);
+                } else {
+                    // Pre-fill with a default saved outfit example
+                    savedCustomLooks = [
+                        {
+                            id: 1,
+                            name: "Look Assinatura de Outono",
+                            style: "Smart Casual",
+                            occasion: "Trabalho",
+                            top: "Camisa Oxford Branca + Blazer Marinho",
+                            bottom: "Calça Chino Bege",
+                            footwear: "Loafer em Camurça",
+                            extra: "Relógio de Couro & Pasta Executiva",
+                            createdAt: "09/10/2026"
+                        }
+                    ];
+                }
+            } catch (e) {
+                savedCustomLooks = [];
+            }
+        }
+
+        // Utility: Toast Notification & Clipboard Copy
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.textContent = message;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function copyOutfitToClipboard(title, style) {
+            const textToCopy = `Look MÔDE: ${title} (${style})`;
+            
+            // Fallback execCommand for iframe security constraints
+            const tempInput = document.createElement("input");
+            tempInput.value = textToCopy;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+
+            showToast(`Look "${title}" salvo na área de transferência!`);
+        }
+    </script>
+</body>
+</html>
